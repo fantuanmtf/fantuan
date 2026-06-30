@@ -20,16 +20,15 @@
 
 ## 快速开始
 
-### 预编译版本
+### 构建
 
-项目 `bin/` 目录包含预编译的可执行文件：
+```bash
+# Linux
+make
 
-| 文件 | 平台 | 说明 |
-|------|------|------|
-| `bin/compiler.exe` | Windows x64 | Windows PE32+ 可执行文件 |
-| `bin/run.bat` | Windows | 快速运行脚本 |
-| `bin/compiler` | Linux x64 | Linux ELF64 可执行文件（需自行构建） |
-| `bin/run.sh` | Linux | 快速运行脚本 |
+# 或使用构建脚本
+./tools/build.sh
+```
 
 ### Windows 快速使用
 
@@ -51,15 +50,15 @@ type ir_dump.txt
 
 ```bash
 # 二进制输入模式
-./compiler -c cpu_examples/8bit_example.hdr tests/test_binary.bin
+./compiler -c cpu_defs/8bit_example.hdr tests/test_binary.bin
 cat output.asm
 
 # 十六进制文本输入模式
-./compiler -c cpu_examples/8bit_example.hdr -x tests/test.hex
+./compiler -c cpu_defs/8bit_example.hdr -x tests/test.hex
 cat output.asm
 
 # 导出 IR 调试信息
-./compiler -c cpu_examples/8bit_example.hdr -i ir_dump.txt tests/test_binary.bin
+./compiler -c cpu_defs/8bit_example.hdr -i ir_dump.txt tests/test_binary.bin
 cat ir_dump.txt
 ```
 
@@ -82,28 +81,17 @@ compiler -c <cpu.hdr> [options] <input>
 
 ### CPU 定义文件 (.hdr)
 
-CPU 定义文件使用自定义 DSL（领域特定语言）描述指令集架构。详见 [`cpu_examples/dsl-spec.md`](cpu_examples/dsl-spec.md)。
+CPU 定义文件使用自定义 DSL（领域特定语言）描述指令集架构。详见 [`cpu_defs/dsl-spec.md`](cpu_defs/dsl-spec.md)。
 
-示例片段（[`cpu_examples/8bit_example.hdr`](cpu_examples/8bit_example.hdr)）：
+示例片段（[`cpu_defs/8bit_example.hdr`](cpu_defs/8bit_example.hdr)）：
 
 ```hdr
-bits 8
-arch "8bit_example"
+; 单字节指令，高4位匹配 opcode
+; 低4位为操作数字段 [3:2]=dst, [1:0]=src
 
-insn nop {
-    opcode 0x00
-    mask 0xFF
-}
-
-insn mov {
-    opcode 0x10
-    mask 0xF0
-}
-
-insn add {
-    opcode 0x20
-    mask 0xF0
-}
+指令 nop       mask=0xF0 pattern=0x00
+指令 mov       mask=0xF0 pattern=0x10  operands=dst,src
+指令 add       mask=0xF0 pattern=0x20  operands=dst,src
 ...
 ```
 
@@ -119,14 +107,14 @@ insn add {
 ### Linux 构建
 
 ```bash
-./build.sh
+./tools/build.sh
 ```
 
 构建产物：`bin/compiler`（同时复制到项目根目录 `./compiler`）
 
 验证构建：
 ```bash
-./compiler -c cpu_examples/8bit_example.hdr tests/test_binary.bin
+./compiler -c cpu_defs/8bit_example.hdr tests/test_binary.bin
 cat output.asm
 # 预期输出: nop\nmov\nmov\nadd\n...
 ```
@@ -136,7 +124,7 @@ cat output.asm
 直接在 **Windows cmd** 终端中运行（无需 MSYS2）：
 
 ```bat
-build.bat
+tools\build.bat
 ```
 
 构建产物：`bin\compiler.exe`（同时复制到项目根目录 `./compiler.exe`）
@@ -203,36 +191,36 @@ compiler.exe -c cpu_examples\8bit_example.hdr -i ir_dump.txt tests\test_binary.b
 
 ```
 NTF-Demo/
-├── bin/                    # 编译输出目录（可执行文件）
-│   ├── compiler.exe        # Windows 可执行文件
-│   ├── compiler            # Linux 可执行文件
-│   ├── run.bat             # Windows 快速运行脚本
-│   └── run.sh              # Linux 快速运行脚本
-├── tests/                  # 测试用例
-│   ├── test_binary.bin     # 二进制指令测试文件
-│   ├── test_mov.01         # MOV 指令测试（旧格式）
-│   ├── hello.01            # Hello World 示例
-│   └── ...                 # 其他测试文件
-├── cpu_examples/           # CPU 定义文件示例
+├── src/                    # 编译器源码 (NASM x86-64)
+│   ├── main.asm            # 入口、CLI、缓冲 I/O
+│   ├── cpuhdr.asm          # CPU 定义 (.hdr) 解析器
+│   ├── decode.asm          # 通用解码器 → IR
+│   ├── codegen.asm         # IR → 汇编输出
+│   ├── input.asm           # 多格式输入读取
+│   ├── assembler.asm       # NTF 汇编器
+│   ├── interpreter.asm     # 虚拟 CPU 解释器
+│   └── util.asm            # 共享工具函数
+├── include/                # 头文件
+│   ├── config.inc          # 跨平台宏 (Linux/Windows)
+│   ├── ir_defs.inc         # IR 数据结构常量
+│   └── cpu_defs.inc        # CPU 定义数据结构常量
+├── cpu_defs/               # CPU 架构定义文件 (.hdr)
 │   ├── 8bit_example.hdr    # 8位 CPU 指令集定义
 │   ├── riscv_lite.hdr      # RISC-V 精简指令集定义
 │   ├── old_compat.hdr      # 兼容旧版指令集定义
+│   ├── test_hello.hdr      # Hello World 测试定义
 │   └── dsl-spec.md         # CPU 定义 DSL 规范文档
-├── plans/                  # 重构与开发计划
-│   └── refactor-plan.md    # 重构计划文档
-├── inc.asm                 # IR 条目结构定义
-├── main.asm                # 主入口：文件 I/O、命令行解析与主循环
-├── cpuhdr.asm              # CPU 头文件解析器
-├── input.asm               # 输入文件读取与格式解析（二进制/十六进制）
-├── decode.asm              # 通用解码器（将二进制指令解码为 IR）
-├── codegen.asm             # 代码生成器（将 IR 转换为汇编输出）
-├── config.inc              # 跨平台配置宏（include 文件）
-├── ir_defs.inc             # IR 数据结构偏移量定义
-├── cpu_defs.inc            # CPU 定义数据结构偏移量常量
-├── build.bat               # Windows 构建脚本（cmd 原生）
-├── build.sh                # Linux 构建脚本
-├── README.md               # 本文档
-└── LICENSE                 # 许可证
+├── examples/               # .ntf 示例程序
+├── tests/                  # 测试用例
+├── tools/                  # 构建脚本与工具
+│   ├── build.sh            # Linux 构建脚本
+│   ├── build.bat           # Windows 构建脚本
+│   └── build_windows.sh    # Linux→Windows 交叉构建脚本
+├── plans/                  # 开发计划文档
+├── docs/                   # 详细文档
+├── Makefile
+├── README.md
+└── LICENSE
 ```
 
 ## 架构说明
@@ -270,16 +258,16 @@ output.asm           ← 生成的 NASM 汇编源码
 
 NTF-Demo v2.0 采用四阶段流水线架构：
 
-1. **CPU 头解析** (`cpuhdr.asm`) — 解析 `.hdr` 文件中的指令定义，构建运行时的解码表
-2. **输入读取** (`input.asm`) — 读取二进制（`.bin`）或十六进制文本（`-x`）格式的输入
-3. **指令解码** (`decode.asm`) — 使用通用解码器将每个二进制字节与 CPU 定义匹配，生成 IR 条目
-4. **代码生成** (`codegen.asm`) — 遍历 IR 缓冲区，为每条 IR 条目生成对应的汇编文本
+1. **CPU 头解析** (`src/cpuhdr.asm`) — 解析 `.hdr` 文件中的指令定义，构建运行时的解码表
+2. **输入读取** (`src/input.asm`) — 读取二进制（`.bin`）或十六进制文本（`-x`）格式的输入
+3. **指令解码** (`src/decode.asm`) — 使用通用解码器将每个二进制字节与 CPU 定义匹配，生成 IR 条目
+4. **代码生成** (`src/codegen.asm`) — 遍历 IR 缓冲区，为每条 IR 条目生成对应的汇编文本
 
 这种设计将 **指令集定义** 与 **编译器逻辑** 完全分离——要支持新的 CPU 架构，只需提供对应的 `.hdr` 文件，无需修改编译器代码。
 
 ### 中间表示 (IR)
 
-解码后的每条指令存储为 **IR 条目**（64 字节固定大小），包含：
+解码后的每条指令存储为 **IR 条目**（88 字节固定大小），包含：
 
 | 偏移 | 大小 | 字段 | 说明 |
 |------|------|------|------|
@@ -289,20 +277,20 @@ NTF-Demo v2.0 采用四阶段流水线架构：
 | 48 | 8 | raw | 原始二进制字节 |
 | 56 | 8 | inline_str | 内联字符串指针（可选） |
 
-IR 缓冲区最多可容纳 1024 条条目，通过 [`ir_defs.inc`](ir_defs.inc) 中的偏移常量进行访问。
+IR 缓冲区最多可容纳 256 条条目，通过 [`include/ir_defs.inc`](../include/ir_defs.inc) 中的偏移常量进行访问。
 
 ### 模块职责
 
 | 模块 | 职责 |
 |------|------|
-| [`main.asm`](main.asm) | 入口点、命令行解析、文件打开/关闭、主循环调度、缓冲 I/O 实现、IR 调试输出 |
-| [`cpuhdr.asm`](cpuhdr.asm) | CPU 定义文件（`.hdr`）解析，构建指令查找表 |
-| [`input.asm`](input.asm) | 输入文件读取，二进制/十六进制格式解析 |
-| [`decode.asm`](decode.asm) | 通用解码器，将二进制指令与 CPU 定义匹配，填充 IR 缓冲区 |
-| [`codegen.asm`](codegen.asm) | 遍历 IR 缓冲区，生成格式化的汇编输出文本 |
-| [`config.inc`](config.inc) | 跨平台宏（`sys_read`/`sys_write`/`sys_open`/`exit_app`） |
-| [`ir_defs.inc`](ir_defs.inc) | IR 数据结构偏移量常量定义 |
-| [`cpu_defs.inc`](cpu_defs.inc) | CPU 定义数据结构常量 |
+| [`src/main.asm`](../src/main.asm) | 入口点、命令行解析、文件打开/关闭、主循环调度、缓冲 I/O 实现、IR 调试输出 |
+| [`src/cpuhdr.asm`](../src/cpuhdr.asm) | CPU 定义文件（`.hdr`）解析，构建指令查找表 |
+| [`src/input.asm`](../src/input.asm) | 输入文件读取，二进制/十六进制格式解析 |
+| [`src/decode.asm`](../src/decode.asm) | 通用解码器，将二进制指令与 CPU 定义匹配，填充 IR 缓冲区 |
+| [`src/codegen.asm`](../src/codegen.asm) | 遍历 IR 缓冲区，生成格式化的汇编输出文本 |
+| [`include/config.inc`](../include/config.inc) | 跨平台宏（`sys_read`/`sys_write`/`sys_open`/`exit_app`） |
+| [`include/ir_defs.inc`](../include/ir_defs.inc) | IR 数据结构偏移量常量定义 |
+| [`include/cpu_defs.inc`](../include/cpu_defs.inc) | CPU 定义数据结构常量 |
 
 ### 跨平台设计
 
@@ -329,12 +317,12 @@ v2.0 的主要变化：
 2. **CPU 定义文件**：新增 `-c` 参数，通过 `.hdr` 文件定义指令集
 3. **IR 中间表示**：引入 IR 缓冲区作为解码与代码生成之间的桥梁
 4. **删除旧指令模块**：移除 `nop.asm` ~ `print.asm` 等 12 个指令处理器，改用通用解码器
-5. **新构建脚本**：`build.bat` 支持 Windows cmd 原生构建，`build.sh` 已更新
+5. **新构建脚本**：`tools/build.bat` 支持 Windows cmd 原生构建，`tools/build.sh` 已更新
 6. **支持多种 CPU 架构**：通过不同 `.hdr` 文件支持 x86、RISC-V 等不同指令集
 
 ## 许可证
 
-本项目基于 [Unlicense协议](LICENSE) 开源。
+本项目基于 [MIT](LICENSE) 协议开源。
 
 ---
 

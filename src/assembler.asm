@@ -35,6 +35,7 @@ extern insn_table
 extern insn_count
 extern field_table
 extern field_count
+extern write_stderr
 
 ; ============================================
 ; BSS
@@ -50,6 +51,8 @@ asm_line        resb ASM_LINE_BUF_SIZE
 asm_token       resb ASM_TOKEN_SIZE
 asm_token2      resb ASM_TOKEN_SIZE
 char_buf        resb 1
+asm_pushback    resb 1          ; CRLF 回退字符
+asm_has_pb      resq 1          ; 是否有回退字符
 
 ; 输出二进制缓冲
 out_bin         resb ASM_OUT_BUF_SIZE
@@ -212,27 +215,6 @@ _start:
     sys_exit
 
 ; ============================================
-; write_stderr: 写入字符串到 stderr (汇编器内置)
-; ============================================
-write_stderr:
-    push rbp
-    mov rbp, rsp
-    push rsi
-    xor rdx, rdx
-.len_loop:
-    cmp byte [rsi + rdx], 0
-    je .have_len
-    inc rdx
-    jmp .len_loop
-.have_len:
-    mov rax, 2
-    mov rdi, rax
-    sys_write
-    pop rsi
-    leave
-    ret
-
-; ============================================
 ; assemble: 主汇编函数
 ; 输入: rdi = 输入 .ntf 文件路径, rsi = 输出 .bin 文件路径
 ; 输出: rax = 0 成功, -1 失败
@@ -302,7 +284,7 @@ assemble:
     load_addr rsi, asm_line
     load_addr rdi, asm_token
     call get_asm_token
-    ; rsi 现在指向操作数
+    mov r10, rax            ; 保存更新后的行位置 (用于操作数解析)
 
     load_addr rsi, asm_token
     mov al, [rsi]
@@ -335,6 +317,9 @@ assemble:
     ; 起始值 = pattern
     mov rax, [r14 + INSN_PATTERN_OFF]
     push rax                ; [rsp] = 累积的指令字
+
+    ; 恢复操作数解析的起始位置
+    mov rsi, r10            ; r10 = get_asm_token 返回的行位置
 
     ; 处理每个操作数
     xor r12, r12            ; r12 = 操作数索引
@@ -506,6 +491,17 @@ read_asm_line:
 
     xor r12, r12
 .read_loop:
+    ; 检查回退字符
+    load_addr rbx, asm_has_pb
+    cmp qword [rbx], 0
+    jz .do_read
+    load_addr rbx, asm_pushback
+    mov al, [rbx]
+    load_addr rcx, asm_has_pb
+    mov qword [rcx], 0
+    jmp .have_char
+
+.do_read:
     load_addr rbx, in_fd
     mov rdi, [rbx]
     load_addr rsi, char_buf
@@ -518,16 +514,39 @@ read_asm_line:
 
     load_addr rbx, char_buf
     mov al, [rbx]
+
+.have_char:
     cmp al, 10
     je .line_end
     cmp al, 13
-    je .line_end
+    je .line_end_cr
 
     load_addr rbx, asm_line
     mov [rbx + r12], al
     inc r12
     cmp r12, ASM_LINE_BUF_SIZE - 2
     jl .read_loop
+
+.line_end_cr:
+    ; CR 读取 — 尝试消费后续的 LF
+    load_addr rbx, in_fd
+    mov rdi, [rbx]
+    load_addr rsi, char_buf
+    mov rdx, 1
+    sys_read
+    test rax, rax
+    jz .line_end_cr_done
+    js .line_end_cr_done
+    load_addr rbx, char_buf
+    mov al, [rbx]
+    cmp al, 10               ; LF？
+    je .line_end             ; 是 LF，已消费
+    ; 不是 LF — 保存为回退字符
+    load_addr rbx, asm_pushback
+    mov [rbx], al
+    load_addr rbx, asm_has_pb
+    mov qword [rbx], 1
+.line_end_cr_done:
 
 .line_end:
     load_addr rbx, asm_line

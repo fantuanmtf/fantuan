@@ -95,11 +95,39 @@ insn_size fixed 4
 ; I-type 寄存器字段 [11:7] = rd, [19:15] = rs1
 字段 rd_itype  bits=11:7
     x0         value=00000
-    ...
+    ra         value=00001
+    sp         value=00010
+    gp         value=00011
+    tp         value=00100
+    t0         value=00101
+    t1         value=00110
+    t2         value=00111
+    s0         value=01000
+    s1         value=01001
+    a0         value=01010
+    a1         value=01011
+    a2         value=01100
+    a3         value=01101
+    a4         value=01110
+    a5         value=01111
 
 字段 rs1_itype bits=19:15
     x0         value=00000
-    ...
+    ra         value=00001
+    sp         value=00010
+    gp         value=00011
+    tp         value=00100
+    t0         value=00101
+    t1         value=00110
+    t2         value=00111
+    s0         value=01000
+    s1         value=01001
+    a0         value=01010
+    a1         value=01011
+    a2         value=01100
+    a3         value=01101
+    a4         value=01110
+    a5         value=01111
 
 ; I-type 立即数 [31:20] = imm[11:0]
 字段 imm_itype bits=31:20  type=immediate  signed
@@ -107,11 +135,39 @@ insn_size fixed 4
 ; S-type 字段
 字段 rs2_stype bits=24:20
     x0         value=00000
-    ...
+    ra         value=00001
+    sp         value=00010
+    gp         value=00011
+    tp         value=00100
+    t0         value=00101
+    t1         value=00110
+    t2         value=00111
+    s0         value=01000
+    s1         value=01001
+    a0         value=01010
+    a1         value=01011
+    a2         value=01100
+    a3         value=01101
+    a4         value=01110
+    a5         value=01111
 
 字段 rs1_stype bits=19:15
     x0         value=00000
-    ...
+    ra         value=00001
+    sp         value=00010
+    gp         value=00011
+    tp         value=00100
+    t0         value=00101
+    t1         value=00110
+    t2         value=00111
+    s0         value=01000
+    s1         value=01001
+    a0         value=01010
+    a1         value=01011
+    a2         value=01100
+    a3         value=01101
+    a4         value=01110
+    a5         value=01111
 
 ; S-type 立即数: imm[11:5] = [31:25], imm[4:0] = [11:7]
 字段 imm_stype bits=31:25  type=immediate  signed  ; 高位部分
@@ -120,11 +176,39 @@ insn_size fixed 4
 ; B-type 字段
 字段 rs1_btype bits=19:15
     x0         value=00000
-    ...
+    ra         value=00001
+    sp         value=00010
+    gp         value=00011
+    tp         value=00100
+    t0         value=00101
+    t1         value=00110
+    t2         value=00111
+    s0         value=01000
+    s1         value=01001
+    a0         value=01010
+    a1         value=01011
+    a2         value=01100
+    a3         value=01101
+    a4         value=01110
+    a5         value=01111
 
 字段 rs2_btype bits=24:20
     x0         value=00000
-    ...
+    ra         value=00001
+    sp         value=00010
+    gp         value=00011
+    tp         value=00100
+    t0         value=00101
+    t1         value=00110
+    t2         value=00111
+    s0         value=01000
+    s1         value=01001
+    a0         value=01010
+    a1         value=01011
+    a2         value=01100
+    a3         value=01101
+    a4         value=01110
+    a5         value=01111
 
 字段 imm_btype bits=31:25  type=immediate  signed  ; imm[12|10:5]
                 bits=11:7                         ; imm[4:1|11]

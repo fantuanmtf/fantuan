@@ -325,7 +325,8 @@ read_hdr_line:
     ; 使用回退字符，跳过文件读取
     load_addr rbx, hdr_pushback
     mov al, [rbx]
-    mov qword [rbx - (hdr_pushback - hdr_has_pb)], 0  ; hdr_has_pb = 0
+    load_addr rcx, hdr_has_pb
+    mov qword [rcx], 0              ; 清除 has_pb 标志
     jmp .have_char_loaded
 
 .do_read:

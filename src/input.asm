@@ -78,6 +78,8 @@ input_buf_pos   resq 1           ; 缓冲区当前位置
 input_buf_end   resq 1           ; 缓冲区有效数据结尾
 hex_line_buf    resb HEX_LINE_BUF    ; 十六进制行缓冲区
 char_buf        resb 1
+input_pushback  resb 1          ; CRLF 回退字符
+input_has_pb    resq 1          ; 是否有回退字符
 
 ; 旧版文本解析状态
 text_line_buf   resb 256
@@ -523,6 +525,17 @@ read_hex_line:
 
     xor r12, r12
 .read_loop:
+    ; 检查回退字符
+    load_addr rbx, input_has_pb
+    cmp qword [rbx], 0
+    jz .do_read
+    load_addr rbx, input_pushback
+    mov al, [rbx]
+    load_addr rcx, input_has_pb
+    mov qword [rcx], 0
+    jmp .have_char
+
+.do_read:
     load_addr rbx, input_fd
     mov rdi, [rbx]
     load_addr rsi, char_buf
@@ -535,16 +548,39 @@ read_hex_line:
 
     load_addr rbx, char_buf
     mov al, [rbx]
+
+.have_char:
     cmp al, 10
     je .line_end
     cmp al, 13
-    je .line_end
+    je .line_end_cr
 
     load_addr rbx, hex_line_buf
     mov [rbx + r12], al
     inc r12
     cmp r12, HEX_LINE_BUF - 2
     jl .read_loop
+
+.line_end_cr:
+    ; CR 读取 — 尝试消费后续 LF
+    load_addr rbx, input_fd
+    mov rdi, [rbx]
+    load_addr rsi, char_buf
+    mov rdx, 1
+    sys_read
+    test rax, rax
+    jz .line_end_cr_done
+    js .line_end_cr_done
+    load_addr rbx, char_buf
+    mov al, [rbx]
+    cmp al, 10               ; LF？
+    je .line_end             ; 是 LF，已消费
+    ; 不是 LF — 保存为回退字符
+    load_addr rbx, input_pushback
+    mov [rbx], al
+    load_addr rbx, input_has_pb
+    mov qword [rbx], 1
+.line_end_cr_done:
 
 .line_end:
     load_addr rbx, hex_line_buf
@@ -658,6 +694,17 @@ read_text_line:
 
     xor r12, r12
 .read_loop:
+    ; 检查回退字符
+    load_addr rbx, input_has_pb
+    cmp qword [rbx], 0
+    jz .do_read
+    load_addr rbx, input_pushback
+    mov al, [rbx]
+    load_addr rcx, input_has_pb
+    mov qword [rcx], 0
+    jmp .have_char
+
+.do_read:
     load_addr rbx, input_fd
     mov rdi, [rbx]
     load_addr rsi, char_buf
@@ -670,16 +717,39 @@ read_text_line:
 
     load_addr rbx, char_buf
     mov al, [rbx]
+
+.have_char:
     cmp al, 10
     je .line_end
     cmp al, 13
-    je .line_end
+    je .line_end_cr
 
     load_addr rbx, text_line_buf
     mov [rbx + r12], al
     inc r12
     cmp r12, 254
     jl .read_loop
+
+.line_end_cr:
+    ; CR 读取 — 尝试消费后续 LF
+    load_addr rbx, input_fd
+    mov rdi, [rbx]
+    load_addr rsi, char_buf
+    mov rdx, 1
+    sys_read
+    test rax, rax
+    jz .line_end_cr_done
+    js .line_end_cr_done
+    load_addr rbx, char_buf
+    mov al, [rbx]
+    cmp al, 10               ; LF？
+    je .line_end             ; 是 LF，已消费
+    ; 不是 LF — 保存为回退字符
+    load_addr rbx, input_pushback
+    mov [rbx], al
+    load_addr rbx, input_has_pb
+    mov qword [rbx], 1
+.line_end_cr_done:
 
 .line_end:
     load_addr rbx, text_line_buf

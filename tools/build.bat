@@ -17,7 +17,7 @@ if %ERRORLEVEL% NEQ 0 (
     exit /b 1
 )
 
-set NASMFLAGS=-f win64 -DTARGET_WIN64
+set NASMFLAGS=-f win64 -DTARGET_WIN64 -i include/
 
 echo [1/3] Assembling core modules...
 
@@ -26,13 +26,14 @@ nasm %NASMFLAGS% src\cpuhdr.asm  -o cpuhdr.o  || exit /b 1
 nasm %NASMFLAGS% src\input.asm   -o input.o   || exit /b 1
 nasm %NASMFLAGS% src\decode.asm  -o decode.o  || exit /b 1
 nasm %NASMFLAGS% src\codegen.asm -o codegen.o || exit /b 1
+nasm %NASMFLAGS% src\util.asm    -o util.o    || exit /b 1
 
 if not exist bin mkdir bin
 
 echo [2/3] Linking...
 
 gcc -m64 -nostdlib -static ^
-    main.o cpuhdr.o input.o decode.o codegen.o ^
+    main.o cpuhdr.o input.o decode.o codegen.o util.o ^
     -o bin\compiler.exe ^
     -lkernel32 ^
     -Wl,-e,_start ^
@@ -47,7 +48,7 @@ if %ERRORLEVEL% EQU 0 (
     echo Binary: bin\compiler.exe
     echo.
     echo Usage:
-    echo   compiler.exe -c cpu_examples\8bit_example.hdr tests\test_binary.bin
+    echo   compiler.exe -c cpu_defs\8bit_example.hdr tests\test_binary.bin
     echo   type output.asm
     dir /-C bin\compiler.exe
 ) else (
@@ -55,7 +56,7 @@ if %ERRORLEVEL% EQU 0 (
     echo gcc linking failed, trying ld directly...
     ld -e _start ^
        --subsystem console ^
-       main.o cpuhdr.o input.o decode.o codegen.o ^
+       main.o cpuhdr.o input.o decode.o codegen.o util.o ^
        -o bin\compiler.exe ^
        -lkernel32
     if %ERRORLEVEL% EQU 0 (

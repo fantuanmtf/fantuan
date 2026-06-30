@@ -18,18 +18,19 @@ mkdir -p bin
 
 echo "[1/2] Assembling core modules..."
 
-# 编译核心模块 (v2.0: 只使用通用解码器，无需旧指令模块)
+# 编译核心模块
 nasm -f elf64 -i include/ src/main.asm    -o main.o    || exit 1
 nasm -f elf64 -i include/ src/cpuhdr.asm  -o cpuhdr.o  || exit 1
 nasm -f elf64 -i include/ src/input.asm   -o input.o   || exit 1
 nasm -f elf64 -i include/ src/decode.asm  -o decode.o  || exit 1
 nasm -f elf64 -i include/ src/codegen.asm -o codegen.o || exit 1
+nasm -f elf64 -i include/ src/util.asm    -o util.o    || exit 1
 
 echo "[2/2] Linking..."
 
-# 链接 (只包含核心模块)
+# 链接
 ld -m elf_x86_64 \
-    main.o cpuhdr.o input.o decode.o codegen.o \
+    main.o cpuhdr.o input.o decode.o codegen.o util.o \
     -o bin/compiler
 
 if [ $? -eq 0 ]; then
@@ -42,7 +43,7 @@ if [ $? -eq 0 ]; then
     echo "Binary: bin/compiler"
     echo ""
     echo "Usage:"
-    echo "  ./compiler -c cpu_examples/8bit_example.hdr tests/test_binary.bin"
+    echo "  ./compiler -c cpu_defs/8bit_example.hdr tests/test_binary.bin"
     echo "  cat output.asm"
     ls -la bin/compiler
 else

@@ -22,7 +22,6 @@ global out_fd
 global write_char
 global write_output
 global flush_output
-global write_stderr
 
 ; ============================================
 ; 外部引用
@@ -42,6 +41,7 @@ extern ir_entry_count
 extern clear_ir_buffer
 
 extern generate_all
+extern write_stderr
 extern GetCommandLineA
 
 ; ============================================
@@ -339,15 +339,12 @@ _start:
     ; ============================================
     ; Step 1: 解析 CPU 头文件
     ; ============================================
-    ; DEBUG
 %ifdef DEBUG
     load_addr rsi, debug_prefix
     call write_stderr
-%endif
     load_addr rbx, cpu_path
     mov rsi, [rbx]
     call write_stderr
-%ifdef DEBUG
     load_addr rsi, debug_newline
     call write_stderr
 %endif
@@ -625,31 +622,6 @@ show_help:
     leave
     ret
 
-; ============================================
-; write_stderr: 写入字符串到 stderr
-; 输入: rsi = 字符串指针 (0结尾)
-; ============================================
-; write_stderr: 写入字符串到 stderr
-; 输入: rsi = 字符串指针 (0结尾)
-; ============================================
-write_stderr:
-    push rbp
-    mov rbp, rsp
-    sub rsp, 40
-    push rsi
-    xor rdx, rdx
-.len_loop:
-    cmp byte [rsi + rdx], 0
-    je .have_len
-    inc rdx
-    jmp .len_loop
-.have_len:
-    mov rax, 2
-    mov rdi, rax
-    sys_write
-    pop rsi
-    leave
-    ret
 ; ============================================
 ; write_ir_file: 将 IR 内容写入调试文件
 ; 遍历所有 IR 条目，输出格式化的调试文本到 ir_fd

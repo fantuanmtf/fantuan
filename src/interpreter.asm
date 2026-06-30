@@ -29,24 +29,9 @@ err_open        db "Error: Cannot open program file", 10, 0
 err_read        db "Error: Cannot read program file", 10, 0
 err_halt        db "CPU Halted.", 10, 0
 
-section .text
-; ---- write_stderr ----
-write_stderr:
-    push rbp
-    mov rbp, rsp
-    push rsi
-    xor rdx, rdx
-.l1: cmp byte [rsi+rdx], 0
-    je .l2
-    inc rdx
-    jmp .l1
-.l2: mov rax, 2
-    mov rdi, rax
-    sys_write
-    pop rsi
-    leave
-    ret
+extern write_stderr
 
+section .text
 ; ---- 入口 ----
 global _start
 _start:

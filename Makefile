@@ -13,7 +13,7 @@ endif
 .PHONY: all
 all: $(BINDIR)/compiler $(BINDIR)/assembler $(BINDIR)/ntfrun
 
-$(BINDIR)/compiler: $(OBJDIR)/main.o $(OBJDIR)/cpuhdr.o $(OBJDIR)/decode.o $(OBJDIR)/codegen.o $(OBJDIR)/input.o | $(BINDIR)
+$(BINDIR)/compiler: $(OBJDIR)/main.o $(OBJDIR)/cpuhdr.o $(OBJDIR)/decode.o $(OBJDIR)/codegen.o $(OBJDIR)/input.o $(OBJDIR)/util.o | $(BINDIR)
 	$(LD) $(LDFLAGS) $^ -o $@
 	@echo "[OK] compiler"
 
@@ -21,7 +21,7 @@ $(BINDIR)/assembler: $(OBJDIR)/assembler.o $(OBJDIR)/cpuhdr.o $(OBJDIR)/util.o |
 	$(LD) $(LDFLAGS) $^ -o $@
 	@echo "[OK] assembler"
 
-$(BINDIR)/ntfrun: $(OBJDIR)/interpreter.o | $(BINDIR)
+$(BINDIR)/ntfrun: $(OBJDIR)/interpreter.o $(OBJDIR)/util.o | $(BINDIR)
 	$(LD) $(LDFLAGS) $^ -o $@
 	@echo "[OK] ntfrun"
 

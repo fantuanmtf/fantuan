@@ -23,20 +23,21 @@ if ! command -v nasm &> /dev/null; then
     fi
 fi
 
-NASMFLAGS="-f win64 -DTARGET_WIN64"
+NASMFLAGS="-f win64 -DTARGET_WIN64 -i include/"
 
 echo "[1/3] Assembling core modules..."
-$NASM $NASMFLAGS main.asm    -o main.o    || exit 1
-$NASM $NASMFLAGS cpuhdr.asm  -o cpuhdr.o  || exit 1
-$NASM $NASMFLAGS input.asm   -o input.o   || exit 1
-$NASM $NASMFLAGS decode.asm  -o decode.o  || exit 1
-$NASM $NASMFLAGS codegen.asm -o codegen.o || exit 1
+$NASM $NASMFLAGS src/main.asm    -o main.o    || exit 1
+$NASM $NASMFLAGS src/cpuhdr.asm  -o cpuhdr.o  || exit 1
+$NASM $NASMFLAGS src/input.asm   -o input.o   || exit 1
+$NASM $NASMFLAGS src/decode.asm  -o decode.o  || exit 1
+$NASM $NASMFLAGS src/codegen.asm -o codegen.o || exit 1
+$NASM $NASMFLAGS src/util.asm    -o util.o    || exit 1
 
 mkdir -p bin
 
 echo "[2/3] Linking..."
 if gcc -m64 -nostdlib -static \
-    main.o cpuhdr.o input.o decode.o codegen.o \
+    main.o cpuhdr.o input.o decode.o codegen.o util.o \
     -o bin/compiler.exe \
     -lkernel32 \
     -Wl,-e,_start \
@@ -49,7 +50,7 @@ if gcc -m64 -nostdlib -static \
     echo "Binary: bin/compiler.exe"
     echo ""
     echo "Usage:"
-    echo "  compiler.exe -c cpu_examples/8bit_example.hdr tests/test_binary.bin"
+    echo "  compiler.exe -c cpu_defs/8bit_example.hdr tests/test_binary.bin"
     echo "  type output.asm"
     ls -la bin/compiler.exe
 else
@@ -57,7 +58,7 @@ else
     echo "gcc linking failed, trying ld directly..."
     ld -e _start \
        --subsystem console \
-       main.o cpuhdr.o input.o decode.o codegen.o \
+       main.o cpuhdr.o input.o decode.o codegen.o util.o \
        -o bin/compiler.exe \
        -lkernel32 && \
     cp bin/compiler.exe compiler.exe && \
