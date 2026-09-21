@@ -1,9 +1,3 @@
 obj/
 bin/
 *.o
-*.obj
-output.asm
-*.txt
-tmp_hex.txt
-compiler
-compiler.exe

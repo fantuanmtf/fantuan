@@ -1,0 +1,12 @@
+; Hello, fantuan! —— write(1, 0a, 15); exit(0)
+_start:
+  b8 01 00 00 00       ;CK=b9 mov eax, 1
+  bf 01 00 00 00       ;CK=c0 mov edi, 1
+  be <0a>             ;CK=be mov esi, 0a
+  ba 0f 00 00 00       ;CK=c9 mov edx, 15
+  0f 05                ;CK=14 syscall
+  b8 3c 00 00 00       ;CK=f4 mov eax, 60
+  31 ff                ;CK=30 xor edi, edi
+  0f 05                ;CK=14 syscall
+0a:
+  48 65 6c 6c 6f 2c 20 66 61 6e 74 75 61 6e 21 0a  ;CK=58

@@ -1,62 +1,33 @@
 NASM     := nasm
-LD       := ld
-NASMFLAG := -f elf64 -i include/
-LDFLAGS  := -m elf_x86_64
-SRCDIR   := src
-INCDIR   := include
+CC       := gcc
+CFLAGS   := -O2 -Wall -Wextra -fno-pie -Iinclude
+LDFLAGS  := -no-pie
+
 OBJDIR   := obj
 BINDIR   := bin
-ifdef DEBUG
-    NASMFLAG += -DDEBUG
-endif
 
-.PHONY: all
-all: $(BINDIR)/compiler $(BINDIR)/assembler $(BINDIR)/fantuanrun
+CORE_ASM := src/core/ftcore.asm src/core/elf.asm
+CORE_OBJ := $(CORE_ASM:src/core/%.asm=$(OBJDIR)/%.o)
+CLI_OBJ  := $(OBJDIR)/main.o
 
-$(BINDIR)/compiler: $(OBJDIR)/main.o $(OBJDIR)/cpuhdr.o $(OBJDIR)/decode.o $(OBJDIR)/codegen.o $(OBJDIR)/input.o $(OBJDIR)/util.o | $(BINDIR)
-	$(LD) $(LDFLAGS) $^ -o $@
-	@echo "[OK] compiler"
+.PHONY: all clean test
 
-$(BINDIR)/assembler: $(OBJDIR)/assembler.o $(OBJDIR)/cpuhdr.o $(OBJDIR)/util.o | $(BINDIR)
-	$(LD) $(LDFLAGS) $^ -o $@
-	@echo "[OK] assembler"
+all: $(BINDIR)/fantuan
 
-$(BINDIR)/fantuanrun: $(OBJDIR)/interpreter.o $(OBJDIR)/util.o | $(BINDIR)
-	$(LD) $(LDFLAGS) $^ -o $@
-	@echo "[OK] fantuanrun"
+$(OBJDIR)/%.o: src/core/%.asm | $(OBJDIR)
+	$(NASM) -f elf64 $< -o $@
 
-$(OBJDIR)/main.o: $(SRCDIR)/main.asm $(INCDIR)/config.inc $(INCDIR)/ir_defs.inc | $(OBJDIR)
-	$(NASM) $(NASMFLAG) $< -o $@
-$(OBJDIR)/cpuhdr.o: $(SRCDIR)/cpuhdr.asm $(INCDIR)/config.inc $(INCDIR)/cpu_defs.inc | $(OBJDIR)
-	$(NASM) $(NASMFLAG) $< -o $@
-$(OBJDIR)/decode.o: $(SRCDIR)/decode.asm $(INCDIR)/config.inc $(INCDIR)/cpu_defs.inc $(INCDIR)/ir_defs.inc | $(OBJDIR)
-	$(NASM) $(NASMFLAG) $< -o $@
-$(OBJDIR)/codegen.o: $(SRCDIR)/codegen.asm $(INCDIR)/config.inc $(INCDIR)/ir_defs.inc | $(OBJDIR)
-	$(NASM) $(NASMFLAG) $< -o $@
-$(OBJDIR)/input.o: $(SRCDIR)/input.asm $(INCDIR)/config.inc | $(OBJDIR)
-	$(NASM) $(NASMFLAG) $< -o $@
-$(OBJDIR)/assembler.o: $(SRCDIR)/assembler.asm $(INCDIR)/config.inc $(INCDIR)/cpu_defs.inc | $(OBJDIR)
-	$(NASM) $(NASMFLAG) $< -o $@
-$(OBJDIR)/interpreter.o: $(SRCDIR)/interpreter.asm $(INCDIR)/config.inc | $(OBJDIR)
-	$(NASM) $(NASMFLAG) $< -o $@
-$(OBJDIR)/util.o: $(SRCDIR)/util.asm $(INCDIR)/config.inc | $(OBJDIR)
-	$(NASM) $(NASMFLAG) $< -o $@
+$(OBJDIR)/main.o: src/cli/main.c include/fantuan.h | $(OBJDIR)
+	$(CC) $(CFLAGS) -c $< -o $@
+
+$(BINDIR)/fantuan: $(CORE_OBJ) $(CLI_OBJ) | $(BINDIR)
+	$(CC) $(LDFLAGS) $^ -o $@
 
 $(OBJDIR) $(BINDIR):
 	mkdir -p $@
 
-.PHONY: clean distclean debug release test
+test: all
+	./tests/run_tests.sh
+
 clean:
-	rm -rf $(OBJDIR)
-distclean: clean
-	rm -rf $(BINDIR) output.asm
-debug:
-	$(MAKE) DEBUG=1
-release:
-	$(MAKE) clean all
-test: $(BINDIR)/compiler $(BINDIR)/fantuanrun
-	@echo "=== Compiler ==="
-	$(BINDIR)/compiler -c cpu_defs/8bit_example.hdr tests/test_binary.bin
-	@echo "=== Interpreter ==="
-	printf '\x00\x00' > /tmp/fantuan_test.bin && $(BINDIR)/fantuanrun /tmp/fantuan_test.bin
-	@echo "=== All OK ==="
+	rm -rf $(OBJDIR) $(BINDIR)

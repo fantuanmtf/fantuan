@@ -1,0 +1,8 @@
+; rel8 跳过一字节填充，退出码 42
+_start:
+  eb <0a>             ;CK=eb jmp 0a
+  00                   ;CK=00 填充
+0a:
+  b8 3c 00 00 00       ;CK=f4 mov eax, 60
+  bf 2a 00 00 00       ;CK=e9 mov edi, 42
+  0f 05                ;CK=14 syscall

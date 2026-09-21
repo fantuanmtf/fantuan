@@ -1,0 +1,5 @@
+; 退出码 0 —— 最小可运行程序
+_start:
+  b8 3c 00 00 00       ;CK=f4 mov eax, 60
+  31 ff                ;CK=30 xor edi, edi
+  0f 05                ;CK=14 syscall

@@ -1,0 +1,18 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 安装 NASM
+        run: sudo apt-get update && sudo apt-get install -y nasm
+      - name: 构建
+        run: make
+      - name: 测试
+        run: make test

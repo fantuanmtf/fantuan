@@ -1,0 +1,9 @@
+; eax 从 3 倒数到 0，然后 exit(0)
+_start:
+  b8 03 00 00 00       ;CK=bb mov eax, 3
+0a:
+  48 ff c8             ;CK=0f dec rax
+  75 <0a>             ;CK=75 jnz 0a
+  89 c7                ;CK=50 mov edi, eax
+  b8 3c 00 00 00       ;CK=f4 mov eax, 60
+  0f 05                ;CK=14 syscall
