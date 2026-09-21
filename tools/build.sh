@@ -1,10 +1,10 @@
 #!/bin/bash
 # ============================================
-# build.sh - NTF-Demo v2.0 Linux 构建脚本
+# build.sh - fantuan v2.0 Linux 构建脚本
 # ============================================
 
 echo "=========================================="
-echo "Building NTF-Demo v2.0 (Linux x86_64)"
+echo "Building fantuan v2.0 (Linux x86_64)"
 echo "=========================================="
 
 # 检查 NASM

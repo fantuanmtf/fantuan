@@ -1,4 +1,4 @@
-# NTF-Demo v2.0 — 自定义 CPU 编译器工具链
+# fantuan v2.0 — 自定义 CPU 编译器工具链
 
 [![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Windows-blue)]()
 [![Language](https://img.shields.io/badge/language-x86__64%20Assembly-red)]()
@@ -20,7 +20,7 @@ cat output.asm
 ## 项目结构
 
 ```
-NTF-Demo/
+fantuan/
 ├── src/            # 编译器源码 (NASM x86-64)
 │   ├── main.asm        # 入口、CLI、缓冲 I/O
 │   ├── cpuhdr.asm      # CPU 定义 (.hdr) 解析器
@@ -32,7 +32,7 @@ NTF-Demo/
 │   ├── ir_defs.inc     # IR 数据结构常量
 │   └── cpu_defs.inc    # CPU 定义数据结构常量
 ├── cpu_defs/       # CPU 架构定义文件 (.hdr)
-├── examples/       # .ntf 示例程序
+├── examples/       # .fantuan 示例程序
 ├── tests/          # 测试用例
 ├── tools/          # 构建脚本
 ├── docs/           # 详细文档

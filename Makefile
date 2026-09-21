@@ -11,7 +11,7 @@ ifdef DEBUG
 endif
 
 .PHONY: all
-all: $(BINDIR)/compiler $(BINDIR)/assembler $(BINDIR)/ntfrun
+all: $(BINDIR)/compiler $(BINDIR)/assembler $(BINDIR)/fantuanrun
 
 $(BINDIR)/compiler: $(OBJDIR)/main.o $(OBJDIR)/cpuhdr.o $(OBJDIR)/decode.o $(OBJDIR)/codegen.o $(OBJDIR)/input.o $(OBJDIR)/util.o | $(BINDIR)
 	$(LD) $(LDFLAGS) $^ -o $@
@@ -21,9 +21,9 @@ $(BINDIR)/assembler: $(OBJDIR)/assembler.o $(OBJDIR)/cpuhdr.o $(OBJDIR)/util.o |
 	$(LD) $(LDFLAGS) $^ -o $@
 	@echo "[OK] assembler"
 
-$(BINDIR)/ntfrun: $(OBJDIR)/interpreter.o $(OBJDIR)/util.o | $(BINDIR)
+$(BINDIR)/fantuanrun: $(OBJDIR)/interpreter.o $(OBJDIR)/util.o | $(BINDIR)
 	$(LD) $(LDFLAGS) $^ -o $@
-	@echo "[OK] ntfrun"
+	@echo "[OK] fantuanrun"
 
 $(OBJDIR)/main.o: $(SRCDIR)/main.asm $(INCDIR)/config.inc $(INCDIR)/ir_defs.inc | $(OBJDIR)
 	$(NASM) $(NASMFLAG) $< -o $@
@@ -54,9 +54,9 @@ debug:
 	$(MAKE) DEBUG=1
 release:
 	$(MAKE) clean all
-test: $(BINDIR)/compiler $(BINDIR)/ntfrun
+test: $(BINDIR)/compiler $(BINDIR)/fantuanrun
 	@echo "=== Compiler ==="
 	$(BINDIR)/compiler -c cpu_defs/8bit_example.hdr tests/test_binary.bin
 	@echo "=== Interpreter ==="
-	printf '\x00\x00' > /tmp/ntf_test.bin && $(BINDIR)/ntfrun /tmp/ntf_test.bin
+	printf '\x00\x00' > /tmp/fantuan_test.bin && $(BINDIR)/fantuanrun /tmp/fantuan_test.bin
 	@echo "=== All OK ==="

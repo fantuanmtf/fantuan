@@ -1,6 +1,6 @@
 #!/bin/bash
-# NTF Toolchain Wrapper
-# Usage: ./ntf {build|run|disasm|asm} <file>
+# fantuan Toolchain Wrapper
+# Usage: ./fantuan {build|run|disasm|asm} <file>
 set -e
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJ_DIR="$(dirname "$SCRIPT_DIR")"
@@ -8,15 +8,15 @@ CPU_DEF="$PROJ_DIR/cpu_defs/8bit_example.hdr"
 
 case "${1:-}" in
     build)
-        # .ntf → assemble → .bin
+        # .fantuan → assemble → .bin
         SRC="$2"
-        OUT="${2%.ntf}"
+        OUT="${2%.fantuan}"
         echo "=== Assembling $SRC → $OUT.bin ==="
         "$PROJ_DIR/bin/assembler" -c "$CPU_DEF" "$SRC" -o "$OUT.bin"
         echo "=== Wrapping $OUT.bin → $OUT (executable) ==="
         cat > "$OUT" << EOF
 #!/bin/bash
-exec "$PROJ_DIR/bin/ntfrun" "\$(dirname "\$0")/\$(basename "\$0").bin"
+exec "$PROJ_DIR/bin/fantuanrun" "\$(dirname "\$0")/\$(basename "\$0").bin"
 EOF
         cp "$OUT.bin" "$(dirname "$OUT")/" 2>/dev/null || true
         chmod +x "$OUT"
@@ -24,9 +24,9 @@ EOF
         ;;
     run)
         SRC="$2"
-        TMP="/tmp/ntf_$$.bin"
+        TMP="/tmp/fantuan_$$.bin"
         "$PROJ_DIR/bin/assembler" -c "$CPU_DEF" "$SRC" -o "$TMP" 2>/dev/null
-        "$PROJ_DIR/bin/ntfrun" "$TMP"
+        "$PROJ_DIR/bin/fantuanrun" "$TMP"
         rm -f "$TMP"
         ;;
     disasm)
@@ -38,10 +38,10 @@ EOF
         exec "$PROJ_DIR/bin/assembler" -c "$CPU_DEF" "$@"
         ;;
     *)
-        echo "NTF Toolchain"
-        echo "  ntf build <file.ntf>   - Compile to executable"
-        echo "  ntf run   <file.ntf>   - Compile and run"
-        echo "  ntf disasm <file.bin>  - Disassemble binary"
-        echo "  ntf asm   <file.ntf>   - Assemble to .bin"
+        echo "fantuan Toolchain"
+        echo "  fantuan build <file.fantuan>   - Compile to executable"
+        echo "  fantuan run   <file.fantuan>   - Compile and run"
+        echo "  fantuan disasm <file.bin>      - Disassemble binary"
+        echo "  fantuan asm   <file.fantuan>   - Assemble to .bin"
         ;;
 esac

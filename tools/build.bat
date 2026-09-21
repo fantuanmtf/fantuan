@@ -1,12 +1,12 @@
 @echo off
 REM ============================================
-REM build.bat - NTF-Demo v2.0 Windows 构建脚本
+REM build.bat - fantuan v2.0 Windows 构建脚本
 REM 适用于 Windows cmd 原生环境
 REM 需要: nasm.exe, gcc.exe (MinGW) 在 PATH 中
 REM ============================================
 
 echo ==========================================
-echo Building NTF-Demo v2.0 (Windows x64)
+echo Building fantuan v2.0 (Windows x64)
 echo ==========================================
 
 REM 检查 NASM

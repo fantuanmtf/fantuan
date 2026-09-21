@@ -1,6 +1,6 @@
 ; ============================================
-; interpreter.asm - NTF 虚拟 CPU 解释器
-; 用法: ntfrun <program.bin>
+; interpreter.asm - fantuan 虚拟 CPU 解释器
+; 用法: fantuanrun <program.bin>
 ; ============================================
 
 default rel
@@ -24,7 +24,7 @@ v_stack         resb STACK_SIZE
 char_buf        resb 1
 
 section .data
-err_usage       db "Usage: ntfrun <program.bin>", 10, 0
+err_usage       db "Usage: fantuanrun <program.bin>", 10, 0
 err_open        db "Error: Cannot open program file", 10, 0
 err_read        db "Error: Cannot read program file", 10, 0
 err_halt        db "CPU Halted.", 10, 0

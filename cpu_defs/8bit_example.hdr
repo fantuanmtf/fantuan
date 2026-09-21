@@ -21,7 +21,7 @@
 ; ============================================
 
 ; --- 全局配置 ---
-arch "ntf-8bit-v2"
+arch "fantuan-8bit-v2"
 endian little
 insn_size variable
 

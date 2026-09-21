@@ -1,10 +1,10 @@
 #!/bin/bash
 # ============================================
-# build_windows.sh - NTF-Demo v2.0 Windows 构建脚本
+# build_windows.sh - fantuan v2.0 Windows 构建脚本
 # ============================================
 
 echo "=========================================="
-echo "Building NTF-Demo v2.0 (Windows x64)"
+echo "Building fantuan v2.0 (Windows x64)"
 echo "=========================================="
 
 # 检查 NASM

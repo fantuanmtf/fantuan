@@ -1,9 +1,9 @@
 ; ============================================
-; assembler.asm - NTF 汇编器 (跨平台版)
-; 功能: 将 .ntf 汇编源码编译为 .bin 二进制
+; assembler.asm - fantuan 汇编器 (跨平台版)
+; 功能: 将 .fantuan 汇编源码编译为 .bin 二进制
 ; ============================================
 ; 用法:
-;   assembler -c <cpu.hdr> <input.ntf> -o <output.bin>
+;   assembler -c <cpu.hdr> <input.fantuan> -o <output.bin>
 ; ============================================
 
 default rel
@@ -74,7 +74,7 @@ cpu_path        dq 0
 default_out     db "output.bin", 0
 default_cpu     db "cpu.hdr", 0
 
-err_usage       db "Usage: assembler -c <cpu.hdr> <input.ntf> -o <output.bin>", 10, 0
+err_usage       db "Usage: assembler -c <cpu.hdr> <input.fantuan> -o <output.bin>", 10, 0
 err_no_cpu      db "Error: No CPU header specified", 10, 0
 err_no_input    db "Error: No input file specified", 10, 0
 err_open_cpu    db "Error: Cannot open CPU header", 10, 0
@@ -216,7 +216,7 @@ _start:
 
 ; ============================================
 ; assemble: 主汇编函数
-; 输入: rdi = 输入 .ntf 文件路径, rsi = 输出 .bin 文件路径
+; 输入: rdi = 输入 .fantuan 文件路径, rsi = 输出 .bin 文件路径
 ; 输出: rax = 0 成功, -1 失败
 ; ============================================
 assemble:

@@ -1,7 +1,7 @@
 ; ============================================
-; main.asm - NTF-Demo v2.0 主入口 (跨平台版)
+; main.asm - fantuan v2.0 主入口 (跨平台版)
 ; ============================================
-; NTF-Demo: 二进制到汇编的通用解码器
+; fantuan: 二进制到汇编的通用解码器
 ;
 ; 使用:
 ;   compiler -c cpu.hdr program.bin
@@ -69,7 +69,7 @@ default_cpu     db './cpu.hdr', 0
 
 ; 常量字符串
 section .data
-help_msg    db "NTF-Demo v2.0 - Binary to Assembly Decoder", 10
+help_msg    db "fantuan v2.0 - Binary to Assembly Decoder", 10
             db "Usage: compiler [options] <input>", 10
             db "Options:", 10
             db "  -c, --cpu <file>   CPU definition header", 10
